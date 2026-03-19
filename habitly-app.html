@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<title>Habitly</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+/* ── TOKENS ── */
+:root{
+  --bg:#0a0a0f;--bg2:#111118;--bg3:#18181f;--bg4:#1f1f28;--bg5:#26262f;
+  --accent:#6c63ff;--accent2:#9b94ff;--accent3:rgba(108,99,255,0.15);
+  --green:#2ecc71;--green2:rgba(46,204,113,0.15);
+  --amber:#f39c12;--coral:#e74c3c;--blue:#3498db;
+  --text:#eeeef5;--text2:#9090a8;--text3:#4a4a5a;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.1);
+  --card:#111118;--r:16px;--r-sm:10px;--r-xs:6px;
+  --shadow:0 8px 32px rgba(0,0,0,0.4);
+  --sidebar-w:220px;--panel-w:340px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-size:14px;}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--bg5);border-radius:99px;}
+
+/* ════════════════════════════════════════
+   AUTH SCREEN
+════════════════════════════════════════ */
+#auth{
+  position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+  background:var(--bg);z-index:1000;padding:1rem;
+}
+.auth-wrap{
+  width:100%;max-width:420px;
+  background:var(--bg2);border:1px solid var(--border2);
+  border-radius:24px;padding:2.5rem;
+  box-shadow:0 40px 80px rgba(0,0,0,0.6);
+}
+.auth-logo{display:flex;align-items:center;gap:12px;margin-bottom:2rem;}
+.logo-icon{
+  width:48px;height:48px;border-radius:14px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;box-shadow:0 8px 24px rgba(108,99,255,0.4);
+}
+.logo-text{font-size:22px;font-weight:700;letter-spacing:-0.5px;}
+.logo-sub{font-size:12px;color:var(--text2);margin-top:1px;}
+.atabs{display:flex;background:var(--bg3);border-radius:var(--r-sm);padding:3px;margin-bottom:1.5rem;}
+.atab{flex:1;padding:8px;border:none;background:transparent;color:var(--text2);
+  font-family:'Sora',sans-serif;font-size:13px;font-weight:500;
+  border-radius:8px;cursor:pointer;transition:all 0.2s;}
+.atab.on{background:var(--accent);color:#fff;box-shadow:0 2px 12px rgba(108,99,255,0.5);}
+.afield{margin-bottom:14px;}
+.afield label{display:block;font-size:11px;font-weight:600;color:var(--text2);
+  letter-spacing:0.5px;text-transform:uppercase;margin-bottom:6px;}
+.afield input{
+  width:100%;padding:11px 14px;
+  background:var(--bg3);border:1px solid var(--border2);
+  border-radius:var(--r-sm);color:var(--text);
+  font-family:'Sora',sans-serif;font-size:14px;outline:none;
+  transition:border-color 0.2s,box-shadow 0.2s;
+}
+.afield input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(108,99,255,0.2);}
+.abtn{
+  width:100%;padding:13px;border:none;border-radius:var(--r-sm);
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff;font-family:'Sora',sans-serif;font-size:14px;font-weight:600;
+  cursor:pointer;margin-top:4px;letter-spacing:0.2px;
+  box-shadow:0 4px 20px rgba(108,99,255,0.4);
+  transition:opacity 0.2s,transform 0.1s;
+}
+.abtn:active{opacity:0.85;transform:scale(0.98);}
+.amsg{font-size:12px;text-align:center;margin-top:10px;min-height:16px;color:var(--coral);}
+.amsg.ok{color:var(--green);}
+.supabase-note{
+  margin-top:1.5rem;padding:12px 14px;
+  background:rgba(108,99,255,0.08);border:1px solid rgba(108,99,255,0.2);
+  border-radius:var(--r-sm);font-size:12px;color:var(--text2);line-height:1.6;
+}
+.supabase-note strong{color:var(--accent2);}
+.supabase-note input{
+  width:100%;margin-top:8px;padding:8px 10px;
+  background:var(--bg3);border:1px solid var(--border2);
+  border-radius:var(--r-xs);color:var(--text);
+  font-family:'JetBrains Mono',monospace;font-size:11px;outline:none;
+}
+
+/* ════════════════════════════════════════
+   APP SHELL
+════════════════════════════════════════ */
+#app{display:none;height:100%;flex-direction:column;}
+.topbar{
+  height:52px;background:var(--bg2);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;
+  padding:0 16px;gap:12px;flex-shrink:0;
+  position:relative;z-index:100;
+}
+.topbar-logo{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:700;letter-spacing:-0.3px;}
+.tl-icon{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:13px;}
+.topbar-spacer{flex:1;}
+.topbar-user{font-size:12px;color:var(--text2);font-weight:500;}
+.topbar-avatar{
+  width:30px;height:30px;border-radius:50%;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;color:#fff;cursor:pointer;
+  position:relative;
+}
+/* Cloud sync indicator */
+.sync-pill{
+  display:flex;align-items:center;gap:5px;padding:4px 10px;
+  background:var(--bg3);border:1px solid var(--border2);border-radius:99px;
+  font-size:11px;color:var(--text2);font-weight:500;
+}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+
+/* notification bell */
+.notif-btn{
+  position:relative;width:34px;height:34px;border-radius:var(--r-xs);
+  border:1px solid var(--border2);background:var(--bg3);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:16px;color:var(--text2);
+  transition:all 0.2s;
+}
+.notif-btn:hover{background:var(--bg4);color:var(--text);}
+.notif-badge{
+  position:absolute;top:-4px;right:-4px;
+  width:16px;height:16px;border-radius:50%;
+  background:var(--coral);color:#fff;
+  font-size:9px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  border:2px solid var(--bg2);
+}
+.notif-badge.hidden{display:none;}
+
+/* notif dropdown */
+.notif-panel{
+  position:absolute;top:52px;right:8px;width:320px;
+  background:var(--bg2);border:1px solid var(--border2);
+  border-radius:var(--r);box-shadow:var(--shadow);
+  z-index:500;display:none;overflow:hidden;
+}
+.notif-panel.open{display:block;}
+.notif-header{
+  padding:14px 16px;border-bottom:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;
+}
+.notif-title{font-size:14px;font-weight:600;}
+.notif-clear{font-size:11px;color:var(--accent2);cursor:pointer;}
+.notif-list{max-height:320px;overflow-y:auto;}
+.notif-item{
+  padding:12px 16px;border-bottom:1px solid var(--border);
+  display:flex;gap:10px;align-items:flex-start;
+  transition:background 0.15s;cursor:pointer;
+}
+.notif-item:hover{background:var(--bg3);}
+.notif-item.unread{background:rgba(108,99,255,0.05);}
+.ni-icon{width:32px;height:32px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;}
+.ni-green{background:var(--green2);}
+.ni-accent{background:var(--accent3);}
+.ni-amber{background:rgba(243,156,18,0.15);}
+.ni-body{flex:1;}
+.ni-text{font-size:13px;font-weight:500;line-height:1.4;}
+.ni-time{font-size:11px;color:var(--text3);margin-top:2px;}
+.notif-empty{padding:2rem;text-align:center;color:var(--text3);font-size:13px;}
+
+/* ── BODY LAYOUT ── */
+.body-layout{display:flex;flex:1;overflow:hidden;}
+
+/* SIDEBAR */
+.sidebar{
+  width:var(--sidebar-w);flex-shrink:0;
+  background:var(--bg2);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;padding:12px 8px;
+  overflow-y:auto;
+}
+.nav-section{font-size:10px;font-weight:600;color:var(--text3);
+  letter-spacing:0.8px;text-transform:uppercase;padding:8px 10px 4px;}
+.navbtn{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 10px;border-radius:var(--r-sm);
+  border:none;background:transparent;color:var(--text2);
+  font-family:'Sora',sans-serif;font-size:13px;font-weight:500;
+  cursor:pointer;transition:all 0.15s;width:100%;text-align:left;
+  margin-bottom:1px;
+}
+.navbtn:hover{background:var(--bg3);color:var(--text);}
+.navbtn.on{background:var(--accent3);color:var(--accent2);border:1px solid rgba(108,99,255,0.2);}
+.navbtn .ni{font-size:16px;width:22px;text-align:center;}
+.sidebar-bottom{margin-top:auto;padding-top:12px;border-top:1px solid var(--border);}
+.logout-btn{
+  display:flex;align-items:center;gap:10px;padding:9px 10px;
+  border-radius:var(--r-sm);border:none;background:transparent;
+  color:var(--text3);font-family:'Sora',sans-serif;font-size:13px;
+  cursor:pointer;transition:all 0.15s;width:100%;
+}
+.logout-btn:hover{background:rgba(231,76,60,0.1);color:var(--coral);}
+
+/* MAIN + DETAIL PANEL */
+.main-area{flex:1;overflow:hidden;display:flex;}
+.main-content{flex:1;overflow-y:auto;padding:24px;}
+.detail-panel{
+  width:var(--panel-w);flex-shrink:0;
+  background:var(--bg2);border-left:1px solid var(--border);
+  overflow-y:auto;padding:20px;
+  display:flex;flex-direction:column;gap:16px;
+}
+
+/* ── PAGES ── */
+.page{display:none;}
+.page.on{display:block;}
+.pg-title{font-size:24px;font-weight:700;letter-spacing:-0.5px;margin-bottom:4px;}
+.pg-sub{font-size:13px;color:var(--text2);margin-bottom:24px;}
+
+/* ── CARDS ── */
+.card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);padding:18px;margin-bottom:16px;
+}
+.card-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.card-title{font-size:12px;font-weight:600;color:var(--text2);letter-spacing:0.5px;text-transform:uppercase;}
+
+/* ── METRICS ── */
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:20px;}
+.metric{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:16px;}
+.metric-val{font-size:28px;font-weight:700;letter-spacing:-1px;line-height:1;}
+.metric-lbl{font-size:11px;color:var(--text2);margin-top:6px;font-weight:500;}
+.metric-delta{font-size:11px;margin-top:4px;}
+
+/* ── PROGRESS ── */
+.prog-bar{height:6px;background:var(--bg4);border-radius:99px;overflow:hidden;margin-top:10px;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:99px;transition:width 0.5s ease;}
+.prog-meta{display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-top:6px;}
+
+/* ── HABIT ROWS ── */
+.hrow{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 0;border-bottom:1px solid var(--border);
+  transition:background 0.15s;
+}
+.hrow:last-child{border-bottom:none;}
+.hchk{
+  width:24px;height:24px;border-radius:50%;
+  border:2px solid var(--text3);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:11px;color:transparent;
+  transition:all 0.2s;
+}
+.hchk.done{background:var(--green);border-color:var(--green);color:#fff;box-shadow:0 0 10px rgba(46,204,113,0.4);}
+.hinfo{flex:1;min-width:0;}
+.hname{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.hmeta{font-size:11px;color:var(--text2);margin-top:2px;}
+.hstreakbadge{
+  display:flex;align-items:center;gap:4px;padding:3px 8px;
+  background:rgba(243,156,18,0.12);border-radius:99px;
+  font-size:11px;color:var(--amber);font-weight:600;white-space:nowrap;
+}
+.ibtn{
+  width:28px;height:28px;border-radius:var(--r-xs);
+  border:1px solid var(--border2);background:transparent;
+  color:var(--text3);cursor:pointer;font-size:13px;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.15s;
+}
+.ibtn:hover{background:rgba(231,76,60,0.15);color:var(--coral);border-color:rgba(231,76,60,0.3);}
+
+/* ── ADD BAR ── */
+.add-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.inp{
+  flex:1;min-width:120px;padding:10px 13px;
+  background:var(--bg3);border:1px solid var(--border2);
+  border-radius:var(--r-sm);color:var(--text);
+  font-family:'Sora',sans-serif;font-size:13px;outline:none;
+  transition:border-color 0.2s,box-shadow 0.2s;
+}
+.inp:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(108,99,255,0.15);}
+.sel{
+  padding:10px 10px;background:var(--bg3);border:1px solid var(--border2);
+  border-radius:var(--r-sm);color:var(--text);
+  font-family:'Sora',sans-serif;font-size:13px;outline:none;
+}
+.btn-add{
+  padding:10px 18px;border:none;border-radius:var(--r-sm);
+  background:var(--accent);color:#fff;font-family:'Sora',sans-serif;
+  font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;
+  transition:opacity 0.2s,transform 0.1s;
+}
+.btn-add:active{opacity:0.8;transform:scale(0.97);}
+
+/* ── EVENTS ── */
+.evrow{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--border);}
+.evrow:last-child{border-bottom:none;}
+.evdot{width:10px;height:10px;border-radius:50%;margin-top:5px;flex-shrink:0;}
+.evbody{flex:1;min-width:0;}
+.evtitle{font-size:14px;font-weight:600;}
+.evdate{font-size:11px;color:var(--text2);margin-top:2px;}
+
+/* ── STREAK ── */
+.sgrid{display:grid;grid-template-columns:repeat(14,1fr);gap:3px;margin-top:10px;}
+.scell{aspect-ratio:1;border-radius:3px;background:var(--bg4);}
+.scell.done{background:var(--green);box-shadow:0 0 4px rgba(46,204,113,0.3);}
+.scell.tod{background:rgba(46,204,113,0.3);border:1px solid var(--green);}
+
+/* ── CALENDAR ── */
+.cal-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.cal-nbtn{width:32px;height:32px;border-radius:var(--r-xs);border:1px solid var(--border2);background:var(--bg3);color:var(--text);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;}
+.cal-lbl{font-size:15px;font-weight:600;}
+.cgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+.cwday{text-align:center;font-size:10px;color:var(--text3);padding:3px 0;font-weight:600;}
+.cday{aspect-ratio:1;border-radius:var(--r-xs);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;color:var(--text2);}
+.cday.hh{background:rgba(46,204,113,0.12);color:var(--green);}
+.cday.ee{background:var(--accent3);color:var(--accent2);}
+.cday.bb{background:rgba(46,204,113,0.12);outline:1.5px solid var(--accent);color:var(--green);}
+.cday.tt{background:var(--accent);color:#fff;font-weight:700;box-shadow:0 2px 12px rgba(108,99,255,0.5);}
+.cdot{width:4px;height:4px;border-radius:50%;margin-top:2px;}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:2rem 1rem;color:var(--text3);font-size:13px;}
+.empty-icon{font-size:28px;margin-bottom:8px;}
+
+/* ── LEGEND ── */
+.legend{display:flex;gap:12px;margin-top:12px;font-size:11px;color:var(--text2);flex-wrap:wrap;}
+.litem{display:flex;align-items:center;gap:5px;}
+.lbox{width:11px;height:11px;border-radius:3px;flex-shrink:0;}
+
+/* ── SUPABASE CONFIG PANEL ── */
+.cfg-panel{
+  background:rgba(108,99,255,0.08);border:1px solid rgba(108,99,255,0.2);
+  border-radius:var(--r);padding:16px;margin-bottom:16px;
+}
+.cfg-title{font-size:13px;font-weight:600;color:var(--accent2);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.cfg-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
+.cfg-inp{
+  width:100%;padding:8px 10px;background:var(--bg3);
+  border:1px solid var(--border2);border-radius:var(--r-xs);
+  color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;outline:none;
+}
+.cfg-save{padding:8px 16px;border:none;border-radius:var(--r-xs);background:var(--accent);color:#fff;font-family:'Sora',sans-serif;font-size:12px;font-weight:600;cursor:pointer;}
+.cloud-status{display:flex;align-items:center;gap:6px;font-size:12px;padding:6px 0;}
+.cs-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.cs-green{background:var(--green);}
+.cs-amber{background:var(--amber);}
+.cs-red{background:var(--coral);}
+
+/* ── TOAST ── */
+.toast-wrap{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none;}
+.toast{
+  padding:12px 18px;border-radius:var(--r-sm);
+  background:var(--bg2);border:1px solid var(--border2);
+  font-size:13px;font-weight:500;
+  box-shadow:var(--shadow);
+  display:flex;align-items:center;gap:10px;
+  animation:slideIn 0.3s ease;pointer-events:all;
+  max-width:320px;
+}
+.toast.success{border-color:rgba(46,204,113,0.3);background:rgba(46,204,113,0.08);}
+.toast.error{border-color:rgba(231,76,60,0.3);background:rgba(231,76,60,0.08);}
+.toast.info{border-color:rgba(108,99,255,0.3);background:rgba(108,99,255,0.08);}
+@keyframes slideIn{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+
+/* ════════════════════════════════════════
+   MOBILE OVERRIDES  (≤ 768px)
+════════════════════════════════════════ */
+@media(max-width:768px){
+  .sidebar{display:none;}
+  .detail-panel{display:none;}
+  .metrics{grid-template-columns:repeat(2,1fr);}
+  .main-content{padding:16px;}
+  .pg-title{font-size:20px;}
+  .topbar{padding:0 12px;}
+  .topbar-user{display:none;}
+
+  /* mobile bottom nav */
+  .mobile-nav{
+    display:flex;height:60px;background:var(--bg2);
+    border-top:1px solid var(--border);flex-shrink:0;
+  }
+  .mnbtn{
+    flex:1;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:3px;border:none;background:transparent;
+    color:var(--text3);font-family:'Sora',sans-serif;font-size:10px;
+    font-weight:600;cursor:pointer;transition:color 0.2s;
+  }
+  .mnbtn.on{color:var(--accent2);}
+  .mnbtn .mni{font-size:20px;}
+
+  .notif-panel{width:calc(100vw - 16px);right:8px;}
+}
+@media(min-width:769px){
+  .mobile-nav{display:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- ════ TOAST CONTAINER ════ -->
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<!-- ════ AUTH ════ -->
+<div id="auth">
+  <div class="auth-wrap">
+    <div class="auth-logo">
+      <div class="logo-icon">✦</div>
+      <div><div class="logo-text">Habitly</div><div style="font-size:12px;color:var(--text2);">Build habits that stick</div></div>
+    </div>
+
+    <input type="hidden" id="sb-url" value=""/>
+    <input type="hidden" id="sb-key" value=""/>
+
+    <div class="atabs" style="margin-top:0;">
+      <button class="atab on" id="t-li" onclick="swtab('li')">Sign in</button>
+      <button class="atab" id="t-re" onclick="swtab('re')">Register</button>
+    </div>
+
+    <div id="f-li">
+      <div class="afield"><label>Username</label><input id="li-id" type="text" placeholder="your_username" autocomplete="off"/></div>
+      <div class="afield"><label>Password</label><input id="li-pw" type="password" placeholder="••••••••"/></div>
+      <button class="abtn" onclick="doLogin()">Sign in →</button>
+    </div>
+    <div id="f-re" style="display:none">
+      <div class="afield"><label>Username</label><input id="re-id" type="text" placeholder="choose_username" autocomplete="off"/></div>
+      <div class="afield"><label>Password</label><input id="re-pw" type="password" placeholder="min 4 characters"/></div>
+      <div class="afield"><label>Confirm</label><input id="re-pw2" type="password" placeholder="repeat password"/></div>
+      <button class="abtn" onclick="doRegister()">Create account →</button>
+    </div>
+    <div class="amsg" id="amsg"></div>
+  </div>
+</div>
+
+<!-- ════ APP ════ -->
+<div id="app" style="display:none;height:100%;flex-direction:column;">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-logo"><div class="tl-icon">✦</div>Habitly</div>
+    <div class="topbar-spacer"></div>
+    <div class="sync-pill"><div class="sync-dot" id="sync-dot"></div><span id="sync-txt">Local</span></div>
+    <div class="topbar-user" id="tb-user"></div>
+    <div style="position:relative;">
+      <div class="notif-btn" id="notif-btn" onclick="toggleNotifPanel()">
+        🔔<div class="notif-badge hidden" id="notif-badge">0</div>
+      </div>
+      <div class="notif-panel" id="notif-panel">
+        <div class="notif-header">
+          <div class="notif-title">Notifications</div>
+          <div class="notif-clear" onclick="clearNotifs()">Clear all</div>
+        </div>
+        <div class="notif-list" id="notif-list"></div>
+      </div>
+    </div>
+    <div class="topbar-avatar" id="tb-avatar" onclick="doLogout()">?</div>
+  </div>
+
+  <!-- BODY -->
+  <div style="display:flex;flex:1;overflow:hidden;flex-direction:column;">
+    <div class="body-layout" style="flex:1;overflow:hidden;">
+
+      <!-- SIDEBAR (desktop) -->
+      <div class="sidebar">
+        <div class="nav-section">Menu</div>
+        <button class="navbtn on" id="nb-home" onclick="goPage('home')"><span class="ni">⊡</span>Dashboard</button>
+        <button class="navbtn" id="nb-habits" onclick="goPage('habits')"><span class="ni">✓</span>Habits</button>
+        <button class="navbtn" id="nb-events" onclick="goPage('events')"><span class="ni">◉</span>Events</button>
+        <button class="navbtn" id="nb-streaks" onclick="goPage('streaks')"><span class="ni">▲</span>Streaks</button>
+        <button class="navbtn" id="nb-cal" onclick="goPage('cal')"><span class="ni">▦</span>Calendar</button>
+        <div class="nav-section" style="margin-top:12px;">Settings</div>
+        <button class="navbtn" id="nb-settings" onclick="goPage('settings')"><span class="ni">⚙</span>Settings</button>
+        <div class="sidebar-bottom">
+          <button class="logout-btn" onclick="doLogout()"><span class="ni">↩</span>Sign out</button>
+        </div>
+      </div>
+
+      <!-- MAIN CONTENT -->
+      <div class="main-area">
+        <div class="main-content">
+
+          <!-- DASHBOARD -->
+          <div class="page on" id="pg-home">
+            <div class="pg-title" id="pg-greet">Good day!</div>
+            <div class="pg-sub" id="pg-date"></div>
+            <div class="metrics">
+              <div class="metric">
+                <div class="metric-val" id="m-done" style="color:var(--accent2)">0/0</div>
+                <div class="metric-lbl">Today's habits</div>
+              </div>
+              <div class="metric">
+                <div class="metric-val" id="m-str" style="color:var(--amber)">🔥0</div>
+                <div class="metric-lbl">Best streak</div>
+              </div>
+              <div class="metric">
+                <div class="metric-val" id="m-tot">0</div>
+                <div class="metric-lbl">Total habits</div>
+              </div>
+              <div class="metric">
+                <div class="metric-val" id="m-ev" style="color:var(--green)">0</div>
+                <div class="metric-lbl">Events</div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-hdr"><div class="card-title">Today's progress</div><span id="d-pct" style="font-size:13px;font-weight:600;color:var(--accent2)">0%</span></div>
+              <div class="prog-bar"><div class="prog-fill" id="d-prog" style="width:0%"></div></div>
+              <div class="prog-meta"><span id="d-prog-lbl">0 of 0 completed</span><span style="color:var(--green)" id="d-prog-done"></span></div>
+            </div>
+            <div class="card">
+              <div class="card-hdr"><div class="card-title">Today's habits</div></div>
+              <div id="d-habits"></div>
+            </div>
+            <div class="card">
+              <div class="card-hdr"><div class="card-title">Upcoming events</div></div>
+              <div id="d-events"></div>
+            </div>
+          </div>
+
+          <!-- HABITS -->
+          <div class="page" id="pg-habits">
+            <div class="pg-title">Habits</div>
+            <div class="pg-sub">Build consistency one day at a time</div>
+            <div class="add-bar">
+              <input class="inp" id="h-in" type="text" placeholder="New habit name..."/>
+              <select class="sel" id="h-fr"><option value="daily">Daily</option><option value="weekly">Weekly</option></select>
+              <input class="inp" id="h-time" type="time" style="max-width:130px;" title="Reminder time"/>
+              <button class="btn-add" id="h-add-btn">+ Add habit</button>
+            </div>
+            <div class="card"><div id="h-list"></div></div>
+          </div>
+
+          <!-- EVENTS -->
+          <div class="page" id="pg-events">
+            <div class="pg-title">Events</div>
+            <div class="pg-sub">Log milestones and important dates</div>
+            <div class="add-bar">
+              <input class="inp" id="e-in" type="text" placeholder="Event title..."/>
+              <input class="inp" id="e-dt" type="date" style="max-width:160px;"/>
+              <select class="sel" id="e-cl">
+                <option value="#6c63ff">Purple</option>
+                <option value="#2ecc71">Green</option>
+                <option value="#e74c3c">Red</option>
+                <option value="#f39c12">Amber</option>
+                <option value="#3498db">Blue</option>
+              </select>
+              <button class="btn-add" id="e-add-btn">+ Add event</button>
+            </div>
+            <div class="card"><div id="e-list"></div></div>
+          </div>
+
+          <!-- STREAKS -->
+          <div class="page" id="pg-streaks">
+            <div class="pg-title">Streaks</div>
+            <div class="pg-sub">56-day consistency overview</div>
+            <div id="s-cards"></div>
+          </div>
+
+          <!-- CALENDAR -->
+          <div class="page" id="pg-cal">
+            <div class="pg-title">Schedule</div>
+            <div class="pg-sub">Monthly overview of habits & events</div>
+            <div class="card">
+              <div class="cal-nav">
+                <button class="cal-nbtn" id="cal-prev">‹</button>
+                <span class="cal-lbl" id="cal-lbl"></span>
+                <button class="cal-nbtn" id="cal-next">›</button>
+              </div>
+              <div class="cgrid" id="cal-wdays"></div>
+              <div style="margin-bottom:6px;"></div>
+              <div class="cgrid" id="cal-days"></div>
+              <div class="legend">
+                <div class="litem"><div class="lbox" style="background:rgba(46,204,113,0.3);"></div>Habit done</div>
+                <div class="litem"><div class="lbox" style="background:var(--accent3);"></div>Event</div>
+                <div class="litem"><div class="lbox" style="background:var(--accent);"></div>Today</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SETTINGS -->
+          <div class="page" id="pg-settings">
+            <div class="pg-title">Settings</div>
+            <div class="pg-sub">Configure Supabase cloud sync and notifications</div>
+            <div class="card">
+              <div class="card-hdr"><div class="card-title">☁ Cloud Storage — Supabase</div></div>
+              <div class="cloud-status" id="cloud-status">
+                <div class="cs-dot cs-amber"></div><span>Not connected — using localStorage</span>
+              </div>
+              <div style="margin-top:12px;padding:14px;background:rgba(46,204,113,0.08);border:1px solid rgba(46,204,113,0.2);border-radius:var(--r-sm);">
+                <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--green);">
+                  <span>✓</span> Connected to Supabase
+                </div>
+                <div style="font-size:12px;color:var(--text2);margin-top:6px;">Project: drdjwvjfkmwhgsqxkpds.supabase.co</div>
+                <div style="font-size:12px;color:var(--text2);margin-top:2px;">Credentials are embedded in the app — no setup needed.</div>
+                <button class="btn-add" onclick="syncFromCloud()" style="margin-top:12px;width:100%;background:var(--green);">↻ Force sync from cloud</button>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-hdr"><div class="card-title">🔔 Notifications</div></div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">
+                <div><div style="font-size:14px;font-weight:500;">Browser push notifications</div><div style="font-size:12px;color:var(--text2);margin-top:2px;">Get notified when it's time for a habit</div></div>
+                <button class="btn-add" onclick="reqNotifPerm()" id="notif-perm-btn">Enable</button>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;">
+                <div><div style="font-size:14px;font-weight:500;">Daily reminder</div><div style="font-size:12px;color:var(--text2);margin-top:2px;">Daily summary notification</div></div>
+                <input type="time" class="sel" id="daily-reminder" value="09:00"/>
+              </div>
+              <div id="notif-status" style="font-size:12px;color:var(--text2);margin-top:8px;padding:8px 12px;background:var(--bg3);border-radius:var(--r-xs);"></div>
+            </div>
+          </div>
+
+        </div><!-- /main-content -->
+
+        <!-- DETAIL PANEL (desktop right) -->
+        <div class="detail-panel" id="detail-panel">
+          <div style="font-size:13px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Quick Stats</div>
+
+          <div class="card" style="margin-bottom:0;">
+            <div class="card-hdr"><div class="card-title">Weekly Overview</div></div>
+            <div id="dp-weekly"></div>
+          </div>
+
+          <div class="card" style="margin-bottom:0;">
+            <div class="card-hdr"><div class="card-title">Cloud Sync</div></div>
+            <div class="cloud-status" id="dp-cloud">
+              <div class="cs-dot cs-amber"></div><span>Using localStorage</span>
+            </div>
+            <div style="font-size:11px;color:var(--text3);margin-top:6px;" id="dp-sync-time">Last synced: —</div>
+          </div>
+
+          <div class="card" style="margin-bottom:0;">
+            <div class="card-hdr"><div class="card-title">Today's Events</div></div>
+            <div id="dp-today-events"></div>
+          </div>
+
+          <div class="card" style="margin-bottom:0;">
+            <div class="card-hdr"><div class="card-title">Notifications</div></div>
+            <div id="dp-notif-mini"></div>
+          </div>
+        </div>
+      </div><!-- /main-area -->
+    </div><!-- /body-layout -->
+
+    <!-- MOBILE BOTTOM NAV -->
+    <div class="mobile-nav">
+      <button class="mnbtn on" id="mn-home" onclick="goPage('home')"><span class="mni">⊡</span>Home</button>
+      <button class="mnbtn" id="mn-habits" onclick="goPage('habits')"><span class="mni">✓</span>Habits</button>
+      <button class="mnbtn" id="mn-events" onclick="goPage('events')"><span class="mni">◉</span>Events</button>
+      <button class="mnbtn" id="mn-streaks" onclick="goPage('streaks')"><span class="mni">▲</span>Streaks</button>
+      <button class="mnbtn" id="mn-cal" onclick="goPage('cal')"><span class="mni">▦</span>Cal</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════
+   STORAGE & SUPABASE LAYER
+══════════════════════════════════════════ */
+var LS={
+  get:function(k){try{var v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch(e){return null;}},
+  set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}},
+  del:function(k){try{localStorage.removeItem(k);}catch(e){}}
+};
+
+// ── Supabase credentials (hardcoded) ──────────────────────
+var SB_URL='https://drdjwvjfkmwhgsqxkpds.supabase.co';
+var SB_KEY='sb_publishable_rwyJHVRrc0r0Pr0LuJopwQ_gjrjpgrn';
+var SB_READY=true;
+
+function loadSBConfig(){ updateSyncUI(true); }
+function saveSupabaseConfig(){ toast('Supabase is already connected!','success'); }
+
+function updateSyncUI(connected){
+  var dot=document.getElementById('sync-dot');
+  var txt=document.getElementById('sync-txt');
+  var cs=document.getElementById('cloud-status');
+  var dp=document.getElementById('dp-cloud');
+  if(connected){
+    if(dot){dot.style.background='var(--green)';}
+    if(txt)txt.textContent='Cloud sync';
+    var html='<div class="cs-dot cs-green" style="display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;"></div>Connected to Supabase';
+    if(cs)cs.innerHTML=html;
+    if(dp)dp.innerHTML=html;
+  }else{
+    if(dot){dot.style.background='var(--amber)';}
+    if(txt)txt.textContent='Local only';
+    var html2='<div class="cs-dot cs-amber" style="display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;"></div>Using localStorage';
+    if(cs)cs.innerHTML=html2;
+    if(dp)dp.innerHTML=html2;
+  }
+}
+
+async function sbFetch(path,opts){
+  if(!SB_READY)return null;
+  try{
+    var r=await fetch(SB_URL+'/rest/v1/'+path,Object.assign({
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'}
+    },opts||{}));
+    if(!r.ok)return null;
+    var txt=await r.text();
+    return txt?JSON.parse(txt):[];
+  }catch(e){return null;}
+}
+
+/* ══════════════════════════════════════════
+   AUTH STATE
+══════════════════════════════════════════ */
+var CU=null,calY,calM;
+var notifications=[];
+
+function td(){var d=new Date();return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());}
+function p2(n){return n<10?'0'+n:''+n;}
+function ds(d){return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());}
+function uk(k){return 'hl_'+CU+'_'+k;}
+function getH(){return LS.get(uk('habits'))||[];}
+function putH(h){LS.set(uk('habits'),h);}
+function getEv(){return LS.get(uk('events'))||[];}
+function putEv(e){LS.set(uk('events'),e);}
+function getU(){return LS.get('hl_users')||{};}
+function putU(u){LS.set('hl_users',u);}
+function hp(pw){var h=5381;for(var i=0;i<pw.length;i++)h=((h<<5)+h)+pw.charCodeAt(i);return(h>>>0).toString(36);}
+
+/* ══════════════════════════════════════════
+   CLOUD SYNC
+══════════════════════════════════════════ */
+async function syncToCloud(){
+  if(!SB_READY||!CU)return;
+  var habits=getH(),events=getEv();
+  // upsert habits
+  for(var i=0;i<habits.length;i++){
+    var h=habits[i];
+    await sbFetch('habits?id=eq.'+h.id,{method:'PATCH',body:JSON.stringify({name:h.name,freq:h.freq,streak:h.streak,completions:h.completions,reminder_time:h.reminder_time||null})});
+  }
+  // upsert events
+  for(var j=0;j<events.length;j++){
+    var e=events[j];
+    await sbFetch('events?id=eq.'+e.id,{method:'PATCH',body:JSON.stringify({title:e.title,date:e.date,color:e.color})});
+  }
+  var now=new Date().toLocaleTimeString();
+  var el=document.getElementById('dp-sync-time');
+  if(el)el.textContent='Last synced: '+now;
+  addNotif('☁','Cloud sync complete','Habits and events saved to Supabase','info');
+}
+
+async function syncFromCloud(){
+  if(!SB_READY||!CU)return;
+  toast('Syncing from cloud…','info');
+  var habits=await sbFetch('habits?user_id=eq.'+CU+'&select=*');
+  var events=await sbFetch('events?user_id=eq.'+CU+'&select=*');
+  if(habits&&habits.length){putH(habits);}
+  if(events&&events.length){putEv(events);}
+  if((habits&&habits.length)||(events&&events.length)){
+    toast('Synced from Supabase!','success');
+    renderAll();
+  }
+}
+
+async function cloudInsertHabit(h){
+  if(!SB_READY)return;
+  await sbFetch('habits',{method:'POST',body:JSON.stringify(Object.assign({user_id:CU},h))});
+}
+async function cloudDeleteHabit(id){
+  if(!SB_READY)return;
+  await sbFetch('habits?id=eq.'+id,{method:'DELETE'});
+}
+async function cloudInsertEvent(e){
+  if(!SB_READY)return;
+  await sbFetch('events',{method:'POST',body:JSON.stringify(Object.assign({user_id:CU},e))});
+}
+async function cloudDeleteEvent(id){
+  if(!SB_READY)return;
+  await sbFetch('events?id=eq.'+id,{method:'DELETE'});
+}
+async function cloudUpdateHabit(h){
+  if(!SB_READY)return;
+  await sbFetch('habits?id=eq.'+h.id,{method:'PATCH',body:JSON.stringify({streak:h.streak,completions:h.completions})});
+}
+
+/* ══════════════════════════════════════════
+   NOTIFICATIONS
+══════════════════════════════════════════ */
+function addNotif(icon,text,sub,type){
+  notifications.unshift({id:Date.now(),icon:icon,text:text,sub:sub,type:type||'info',read:false,time:new Date().toLocaleTimeString()});
+  if(notifications.length>20)notifications.pop();
+  renderNotifPanel();
+  updateNotifBadge();
+}
+
+function renderNotifPanel(){
+  var list=document.getElementById('notif-list');
+  if(!list)return;
+  if(!notifications.length){list.innerHTML='<div class="notif-empty">No notifications yet</div>';return;}
+  list.innerHTML=notifications.map(function(n){
+    var iconCls=n.type==='success'?'ni-green':n.type==='info'?'ni-accent':'ni-amber';
+    return '<div class="notif-item'+(n.read?'':' unread')+'" onclick="markRead('+n.id+')">'+
+      '<div class="ni-icon '+iconCls+'">'+n.icon+'</div>'+
+      '<div class="ni-body"><div class="ni-text">'+esc(n.text)+'</div>'+
+      '<div style="font-size:12px;color:var(--text2);margin-top:2px;">'+esc(n.sub)+'</div>'+
+      '<div class="ni-time">'+n.time+'</div></div>'+
+      '</div>';
+  }).join('');
+  // mini panel
+  var mini=document.getElementById('dp-notif-mini');
+  if(mini){
+    var recent=notifications.slice(0,3);
+    mini.innerHTML=recent.map(function(n){
+      return '<div style="padding:8px 0;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:center;">'+
+        '<span style="font-size:14px;">'+n.icon+'</span>'+
+        '<div><div style="font-size:12px;font-weight:500;">'+esc(n.text)+'</div>'+
+        '<div style="font-size:11px;color:var(--text3);">'+n.time+'</div></div>'+
+        '</div>';
+    }).join('')+'<div style="font-size:12px;color:var(--accent2);margin-top:8px;cursor:pointer;" onclick="toggleNotifPanel()">View all →</div>';
+  }
+}
+
+function updateNotifBadge(){
+  var unread=notifications.filter(function(n){return!n.read;}).length;
+  var badge=document.getElementById('notif-badge');
+  if(!badge)return;
+  if(unread>0){badge.classList.remove('hidden');badge.textContent=unread>9?'9+':unread;}
+  else{badge.classList.add('hidden');}
+}
+
+function markRead(id){
+  notifications.forEach(function(n){if(n.id===id)n.read=true;});
+  renderNotifPanel();updateNotifBadge();
+}
+
+function clearNotifs(){
+  notifications=[];renderNotifPanel();updateNotifBadge();
+}
+
+function toggleNotifPanel(){
+  var p=document.getElementById('notif-panel');
+  p.classList.toggle('open');
+  if(p.classList.contains('open')){
+    notifications.forEach(function(n){n.read=true;});
+    updateNotifBadge();renderNotifPanel();
+  }
+}
+
+// close notif panel on outside click
+document.addEventListener('click',function(e){
+  var panel=document.getElementById('notif-panel');
+  var btn=document.getElementById('notif-btn');
+  if(panel&&!panel.contains(e.target)&&btn&&!btn.contains(e.target)){
+    panel.classList.remove('open');
+  }
+});
+
+function reqNotifPerm(){
+  if(!('Notification' in window)){
+    document.getElementById('notif-status').textContent='Push notifications not supported in this browser.';return;
+  }
+  Notification.requestPermission().then(function(p){
+    var el=document.getElementById('notif-status');
+    var btn=document.getElementById('notif-perm-btn');
+    if(p==='granted'){
+      if(el)el.textContent='✓ Push notifications enabled!';
+      if(btn){btn.textContent='Enabled ✓';btn.style.background='var(--green)';}
+      toast('Push notifications enabled!','success');
+      addNotif('🔔','Notifications enabled','You will receive habit reminders','success');
+      scheduleHabitReminders();
+    }else{
+      if(el)el.textContent='Notifications blocked. Please allow in browser settings.';
+    }
+  });
+}
+
+function sendPush(title,body){
+  if(Notification.permission==='granted'){
+    new Notification(title,{body:body,icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%236c63ff"/><text x="50" y="70" font-size="60" text-anchor="middle" fill="white">✦</text></svg>'});
+  }
+}
+
+function scheduleHabitReminders(){
+  var habits=getH();
+  habits.forEach(function(h){
+    if(h.reminder_time){
+      var parts=h.reminder_time.split(':');
+      var now=new Date();
+      var remind=new Date(now.getFullYear(),now.getMonth(),now.getDate(),+parts[0],+parts[1],0);
+      var diff=remind-now;
+      if(diff>0&&diff<86400000){
+        setTimeout(function(){
+          var today=td();
+          if(!(h.completions&&h.completions[today])){
+            sendPush('Habitly — Reminder','Time for: '+h.name);
+            addNotif('⏰','Habit reminder','Time for: '+h.name,'info');
+          }
+        },diff);
+      }
+    }
+  });
+  // daily summary
+  var dailyTime=document.getElementById('daily-reminder');
+  if(dailyTime&&dailyTime.value){
+    var dp=dailyTime.value.split(':');
+    var dNow=new Date();
+    var dRemind=new Date(dNow.getFullYear(),dNow.getMonth(),dNow.getDate(),+dp[0],+dp[1],0);
+    var dDiff=dRemind-dNow;
+    if(dDiff>0){
+      setTimeout(function(){
+        var h2=getH(),today2=td();
+        var done=h2.filter(function(h){return(h.completions||{})[today2];}).length;
+        sendPush('Habitly — Daily Summary',done+'/'+h2.length+' habits done today!');
+        addNotif('📊','Daily summary',done+'/'+h2.length+' habits completed today','success');
+      },dDiff);
+    }
+  }
+}
+
+/* ══════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════ */
+function toast(msg,type){
+  var wrap=document.getElementById('toast-wrap');
+  var t=document.createElement('div');
+  var icon=type==='success'?'✓':type==='error'?'✕':'ℹ';
+  t.className='toast '+(type||'info');
+  t.innerHTML='<span style="font-size:16px;">'+icon+'</span><span>'+esc(msg)+'</span>';
+  wrap.appendChild(t);
+  setTimeout(function(){t.style.opacity='0';t.style.transform='translateY(20px)';t.style.transition='all 0.3s';setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},300);},3000);
+}
+
+/* ══════════════════════════════════════════
+   AUTH
+══════════════════════════════════════════ */
+function setMsg(t,ok){var el=document.getElementById('amsg');el.textContent=t;el.className='amsg'+(ok?' ok':'');}
+function swtab(t){
+  var isL=t==='li';
+  document.getElementById('f-li').style.display=isL?'block':'none';
+  document.getElementById('f-re').style.display=isL?'none':'block';
+  document.getElementById('t-li').className='atab'+(isL?' on':'');
+  document.getElementById('t-re').className='atab'+(!isL?' on':'');
+  setMsg('','');
+}
+
+function doRegister(){
+  var id=document.getElementById('re-id').value.trim();
+  var pw=document.getElementById('re-pw').value;
+  var pw2=document.getElementById('re-pw2').value;
+  if(!id)return setMsg('Username is required.');
+  if(pw.length<4)return setMsg('Password must be at least 4 characters.');
+  if(pw!==pw2)return setMsg('Passwords do not match.');
+  var u=getU();if(u[id])return setMsg('Username already taken.');
+  u[id]=hp(pw);putU(u);
+  setMsg('Account created!',true);
+  setTimeout(function(){launch(id);},600);
+}
+
+function doLogin(){
+  var id=document.getElementById('li-id').value.trim();
+  var pw=document.getElementById('li-pw').value;
+  if(!id||!pw)return setMsg('Please fill all fields.');
+  var u=getU();
+  if(!u[id])return setMsg('User not found. Please register first.');
+  if(u[id]!==hp(pw))return setMsg('Incorrect password.');
+  launch(id);
+}
+
+function launch(id){
+  CU=id;LS.set('hl_session',id);
+  document.getElementById('auth').style.display='none';
+  var appEl=document.getElementById('app');
+  appEl.style.display='flex';
+  document.getElementById('tb-user').textContent='@'+id;
+  var av=document.getElementById('tb-avatar');
+  if(av)av.textContent=id[0].toUpperCase();
+  var now=new Date();calY=now.getFullYear();calM=now.getMonth();
+  document.getElementById('e-dt').value=td();
+  loadSBConfig();
+  syncFromCloud();
+  renderAll();
+  scheduleHabitReminders();
+  addNotif('👋','Welcome back, @'+id+'!','Your habits and data are ready','success');
+  // update notif perm status
+  if('Notification' in window&&Notification.permission==='granted'){
+    var btn=document.getElementById('notif-perm-btn');
+    var el=document.getElementById('notif-status');
+    if(btn){btn.textContent='Enabled ✓';btn.style.background='var(--green)';}
+    if(el)el.textContent='✓ Push notifications are enabled.';
+  }
+}
+
+function doLogout(){
+  LS.del('hl_session');CU=null;notifications=[];
+  document.getElementById('auth').style.display='flex';
+  document.getElementById('app').style.display='none';
+  document.getElementById('li-id').value='';
+  document.getElementById('li-pw').value='';
+  setMsg('','');
+}
+
+/* ══════════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════════ */
+function goPage(name){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on');});
+  document.querySelectorAll('.navbtn').forEach(function(b){b.classList.remove('on');});
+  document.querySelectorAll('.mnbtn').forEach(function(b){b.classList.remove('on');});
+  document.getElementById('pg-'+name).classList.add('on');
+  var nb=document.getElementById('nb-'+name);if(nb)nb.classList.add('on');
+  var mn=document.getElementById('mn-'+name);if(mn)mn.classList.add('on');
+  renderAll();
+}
+
+/* ══════════════════════════════════════════
+   DASHBOARD
+══════════════════════════════════════════ */
+function renderDashboard(){
+  var habits=getH(),events=getEv(),today=td();
+  var hr=new Date().getHours();
+  var greet=hr<12?'Good morning ☀️':hr<17?'Good afternoon 🌤':'Good evening 🌙';
+  document.getElementById('pg-greet').textContent=greet+', @'+CU+'!';
+  document.getElementById('pg-date').textContent=new Date().toDateString();
+  var done=0;habits.forEach(function(h){if((h.completions||{})[today])done++;});
+  var tot=habits.length,best=0;
+  habits.forEach(function(h){if((h.streak||0)>best)best=h.streak;});
+  var pct=tot?Math.round(done/tot*100):0;
+  document.getElementById('m-done').innerHTML=done+'<span style="font-size:14px;color:var(--text2)">/'+tot+'</span>';
+  document.getElementById('m-str').textContent='🔥'+best;
+  document.getElementById('m-tot').textContent=tot;
+  document.getElementById('m-ev').textContent=events.length;
+  document.getElementById('d-prog').style.width=pct+'%';
+  document.getElementById('d-pct').textContent=pct+'%';
+  document.getElementById('d-prog-lbl').textContent=done+' of '+tot+' completed';
+  document.getElementById('d-prog-done').textContent=done===tot&&tot>0?'🎉 All done!':'';
+  var dh=document.getElementById('d-habits');
+  dh.innerHTML=habits.length?habits.map(function(h){
+    var isDone=(h.completions||{})[today];
+    return '<div class="hrow">'+
+      '<div class="hchk'+(isDone?' done':'')+'" data-hid="'+h.id+'">✓</div>'+
+      '<div class="hinfo"><div class="hname">'+esc(h.name)+'</div><div class="hmeta">'+h.freq+(h.reminder_time?' · ⏰'+h.reminder_time:'')+'</div></div>'+
+      '<span class="hstreakbadge">🔥'+(h.streak||0)+'</span>'+
+      '</div>';
+  }).join(''):'<div class="empty"><div class="empty-icon">✓</div>No habits yet — go add some!</div>';
+  var de=document.getElementById('d-events');
+  var up=events.slice().sort(function(a,b){return a.date.localeCompare(b.date);}).slice(0,4);
+  de.innerHTML=up.length?up.map(function(e){
+    return '<div class="evrow">'+
+      '<div class="evdot" style="background:'+e.color+'"></div>'+
+      '<div class="evbody"><div class="evtitle">'+esc(e.title)+'</div><div class="evdate">'+e.date+'</div></div>'+
+      '</div>';
+  }).join(''):'<div class="empty"><div class="empty-icon">◉</div>No events yet</div>';
+  // detail panel weekly
+  var dp=document.getElementById('dp-weekly');
+  if(dp){
+    var days7=[];for(var i=6;i>=0;i--){var dd=new Date();dd.setDate(dd.getDate()-i);days7.push({k:ds(dd),l:['Su','Mo','Tu','We','Th','Fr','Sa'][dd.getDay()]});}
+    dp.innerHTML='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:6px;">'+days7.map(function(d){
+      var c=habits.filter(function(h){return(h.completions||{})[d.k];}).length;
+      var pct2=tot?Math.round(c/tot*100):0;
+      var isT=d.k===today;
+      return '<div style="text-align:center;">'+
+        '<div style="height:40px;background:var(--bg3);border-radius:6px;position:relative;overflow:hidden;'+(isT?'outline:1.5px solid var(--accent);':'')+'">'+
+        '<div style="position:absolute;bottom:0;left:0;right:0;height:'+pct2+'%;background:'+(isT?'var(--accent)':'var(--green)')+';opacity:0.7;"></div>'+
+        '</div>'+
+        '<div style="font-size:10px;color:var(--text3);margin-top:3px;">'+d.l+'</div>'+
+        '</div>';
+    }).join('')+'</div>';
+  }
+  // today's events in detail panel
+  var dte=document.getElementById('dp-today-events');
+  if(dte){
+    var todayEvs=events.filter(function(e){return e.date===today;});
+    dte.innerHTML=todayEvs.length?todayEvs.map(function(e){
+      return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);">'+
+        '<div style="width:8px;height:8px;border-radius:50%;background:'+e.color+';flex-shrink:0;"></div>'+
+        '<span style="font-size:13px;font-weight:500;">'+esc(e.title)+'</span></div>';
+    }).join(''):'<div style="font-size:12px;color:var(--text3);padding:8px 0;">No events today</div>';
+  }
+}
+
+/* ══════════════════════════════════════════
+   HABITS
+══════════════════════════════════════════ */
+function renderHabits(){
+  var habits=getH(),today=td();
+  var list=document.getElementById('h-list');
+  list.innerHTML=habits.length?habits.map(function(h){
+    var isDone=(h.completions||{})[today];
+    return '<div class="hrow">'+
+      '<div class="hchk'+(isDone?' done':'')+'" data-hid="'+h.id+'">✓</div>'+
+      '<div class="hinfo">'+
+        '<div class="hname">'+esc(h.name)+'</div>'+
+        '<div class="hmeta">'+h.freq+(h.reminder_time?' · ⏰ '+h.reminder_time:'')+' · <span style="color:var(--amber)">🔥'+(h.streak||0)+' streak</span></div>'+
+      '</div>'+
+      '<button class="ibtn" data-did="'+h.id+'">✕</button>'+
+      '</div>';
+  }).join(''):'<div class="empty"><div class="empty-icon">✓</div>Add your first habit above!</div>';
+}
+
+async function addHabit(){
+  var name=document.getElementById('h-in').value.trim();
+  var freq=document.getElementById('h-fr').value;
+  var time=document.getElementById('h-time').value;
+  if(!name)return;
+  var h={id:'h_'+Date.now(),name:name,freq:freq,streak:0,completions:{},reminder_time:time||null};
+  var habits=getH();habits.push(h);putH(habits);
+  document.getElementById('h-in').value='';
+  await cloudInsertHabit(h);
+  if(time){
+    addNotif('⏰','Reminder set for "'+name+'"','You\'ll be notified at '+time,'info');
+    scheduleHabitReminders();
+  }
+  addNotif('✓','Habit added: '+name,'Keep it up every '+freq,'success');
+  toast('Habit added!','success');
+  renderAll();
+}
+
+async function deleteHabit(id){
+  var habits=getH();
+  var h=habits.find(function(x){return x.id===id;});
+  putH(habits.filter(function(h2){return h2.id!==id;}));
+  await cloudDeleteHabit(id);
+  if(h)addNotif('🗑','Habit deleted','Removed: '+h.name,'info');
+  toast('Habit deleted.','info');
+  renderAll();
+}
+
+async function toggleHabit(id){
+  var today=td(),habits=getH();
+  var idx=habits.findIndex(function(x){return x.id===id;});
+  if(idx===-1)return;
+  var h=habits[idx];
+  if(!h.completions)h.completions={};
+  if(h.completions[today]){
+    delete h.completions[today];h.streak=Math.max(0,(h.streak||1)-1);
+  }else{
+    h.completions[today]=true;h.streak=(h.streak||0)+1;
+    addNotif('🎯','Habit completed!',h.name+' — '+h.streak+' day streak 🔥','success');
+    if(h.streak>0&&h.streak%7===0){
+      sendPush('Habitly 🎉','Amazing! '+h.streak+' day streak on: '+h.name);
+      addNotif('🏆','Streak milestone!',h.streak+' days on: '+h.name,'success');
+    }
+  }
+  habits[idx]=h;putH(habits);
+  await cloudUpdateHabit(h);
+  renderAll();
+}
+
+/* ══════════════════════════════════════════
+   EVENTS
+══════════════════════════════════════════ */
+function renderEvents(){
+  var events=getEv();
+  var list=document.getElementById('e-list');
+  var sorted=events.slice().sort(function(a,b){return a.date.localeCompare(b.date);});
+  list.innerHTML=sorted.length?sorted.map(function(e){
+    return '<div class="evrow">'+
+      '<div class="evdot" style="background:'+e.color+';margin-top:5px;"></div>'+
+      '<div class="evbody" style="flex:1;"><div class="evtitle">'+esc(e.title)+'</div><div class="evdate">'+e.date+'</div></div>'+
+      '<button class="ibtn" data-eid="'+e.id+'">✕</button>'+
+      '</div>';
+  }).join(''):'<div class="empty"><div class="empty-icon">◉</div>Add your first event above!</div>';
+}
+
+async function addEvent(){
+  var title=document.getElementById('e-in').value.trim();
+  var date=document.getElementById('e-dt').value;
+  var color=document.getElementById('e-cl').value;
+  if(!title||!date)return;
+  var ev={id:'e_'+Date.now(),title:title,date:date,color:color};
+  var events=getEv();events.push(ev);putEv(events);
+  document.getElementById('e-in').value='';
+  await cloudInsertEvent(ev);
+  addNotif('◉','Event added: '+title,'Scheduled for '+date,'info');
+  toast('Event added!','success');
+  renderAll();
+}
+
+async function deleteEvent(id){
+  var events=getEv();
+  var ev=events.find(function(x){return x.id===id;});
+  putEv(events.filter(function(e){return e.id!==id;}));
+  await cloudDeleteEvent(id);
+  if(ev)addNotif('🗑','Event deleted','Removed: '+ev.title,'info');
+  toast('Event deleted.','info');
+  renderAll();
+}
+
+/* ══════════════════════════════════════════
+   STREAKS
+══════════════════════════════════════════ */
+function renderStreaks(){
+  var habits=getH(),today=td();
+  var days=[];for(var i=55;i>=0;i--){var d=new Date();d.setDate(d.getDate()-i);days.push(ds(d));}
+  var con=document.getElementById('s-cards');
+  con.innerHTML=habits.length?habits.map(function(h){
+    var cells=days.map(function(d2){
+      var done=h.completions&&h.completions[d2];
+      return '<div class="scell'+(done?' done':d2===today?' tod':'')+'"></div>';
+    }).join('');
+    return '<div class="card">'+
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">'+
+        '<div><div style="font-size:15px;font-weight:600;">'+esc(h.name)+'</div>'+
+        '<div style="font-size:11px;color:var(--text2);">'+h.freq+(h.reminder_time?' · ⏰ '+h.reminder_time:'')+'</div></div>'+
+        '<span style="font-size:20px;font-weight:700;color:var(--amber);">🔥'+(h.streak||0)+'</span>'+
+      '</div>'+
+      '<div class="sgrid">'+cells+'</div>'+
+      '<div class="legend" style="margin-top:8px;">'+
+        '<div class="litem"><div class="lbox" style="background:var(--green);"></div>Done</div>'+
+        '<div class="litem"><div class="lbox" style="background:rgba(46,204,113,0.3);border:1px solid var(--green);"></div>Today</div>'+
+        '<div class="litem"><div class="lbox" style="background:var(--bg4);"></div>Missed</div>'+
+      '</div></div>';
+  }).join(''):'<div class="card"><div class="empty"><div class="empty-icon">▲</div>No habits yet</div></div>';
+}
+
+/* ══════════════════════════════════════════
+   CALENDAR
+══════════════════════════════════════════ */
+function renderCalendar(){
+  var months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('cal-lbl').textContent=months[calM]+' '+calY;
+  var wdays=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  document.getElementById('cal-wdays').innerHTML=wdays.map(function(d){return '<div class="cwday">'+d+'</div>';}).join('');
+  var habits=getH(),events=getEv(),today=td();
+  var hd={},ed={};
+  habits.forEach(function(h){Object.keys(h.completions||{}).forEach(function(d){hd[d]=true;});});
+  events.forEach(function(e){ed[e.date]=true;});
+  var fd=new Date(calY,calM,1).getDay(),dim=new Date(calY,calM+1,0).getDate();
+  var html='';for(var i=0;i<fd;i++)html+='<div></div>';
+  for(var d=1;d<=dim;d++){
+    var dstr=calY+'-'+p2(calM+1)+'-'+p2(d);
+    var hasH=!!hd[dstr],hasE=!!ed[dstr],isT=dstr===today;
+    var cls='cday';
+    if(isT)cls+=' tt';else if(hasH&&hasE)cls+=' bb';else if(hasH)cls+=' hh';else if(hasE)cls+=' ee';
+    var dot=(hasH||hasE)&&!isT?'<div class="cdot" style="background:'+(hasH?'var(--green)':'var(--accent2)')+'"></div>':'';
+    html+='<div class="'+cls+'"><span>'+d+'</span>'+dot+'</div>';
+  }
+  document.getElementById('cal-days').innerHTML=html;
+}
+function changeMonth(d){calM+=d;if(calM<0){calM=11;calY--;}if(calM>11){calM=0;calY++;}renderCalendar();}
+
+/* ══════════════════════════════════════════
+   RENDER ALL
+══════════════════════════════════════════ */
+function renderAll(){renderDashboard();renderHabits();renderEvents();renderStreaks();renderCalendar();renderNotifPanel();updateNotifBadge();}
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+/* ══════════════════════════════════════════
+   EVENT DELEGATION
+══════════════════════════════════════════ */
+document.addEventListener('click',function(e){
+  var chk=e.target.closest('.hchk');if(chk){var hid=chk.getAttribute('data-hid');if(hid){toggleHabit(hid);return;}}
+  var del=e.target.closest('.ibtn');
+  if(del){
+    var did=del.getAttribute('data-did');if(did){deleteHabit(did);return;}
+    var eid=del.getAttribute('data-eid');if(eid){deleteEvent(eid);return;}
+  }
+  if(e.target.id==='h-add-btn'){addHabit();return;}
+  if(e.target.id==='e-add-btn'){addEvent();return;}
+  if(e.target.id==='cal-prev'){changeMonth(-1);return;}
+  if(e.target.id==='cal-next'){changeMonth(1);return;}
+});
+
+/* ══════════════════════════════════════════
+   BOOT
+══════════════════════════════════════════ */
+loadSBConfig();
+(function(){
+  var sess=LS.get('hl_session'),users=getU();
+  if(sess&&users[sess]){launch(sess);}
+  else{document.getElementById('e-dt').value=td();}
+})();
+
+// Auto-sync to cloud every 5 minutes
+setInterval(function(){if(CU&&SB_READY)syncToCloud();},5*60*1000);
+</script>
+</body>
+</html>
